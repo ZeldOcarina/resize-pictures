@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^3.0.0",
-    "sharp": "^0.24.1"
+    "sharp": "^0.28.3"
   },
   "bin": {
     "resize-pictures": "index.js"
