@@ -10,6 +10,7 @@ const chalk = require("chalk");
 const targetDirectory = process.argv[2];
 
 async function resizePictures() {
+  if (process.argv[2] === "-v") return console.log("1.0.1");
   try {
     console.log(targetDirectory);
     let fileName;
@@ -47,11 +48,11 @@ async function resizePictures() {
             }
           }
         }
+        console.log(chalk.green("Files successfully resized"));
       } catch (err) {
         console.error(chalk.red(err.message));
       }
     });
-    console.log(chalk.green("Files successfully resized"));
   } catch (err) {
     console.error(chalk.red(err.message));
   }
