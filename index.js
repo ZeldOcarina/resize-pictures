@@ -9,8 +9,13 @@ const chalk = require("chalk");
 
 const targetDirectory = process.argv[2];
 
+function convertFilenameToJpg(originalName) {
+  const [fileName] = originalName.split(".");
+  return `${fileName}.jpg`;
+}
+
 async function resizePictures() {
-  if (process.argv[2] === "-v") return console.log("1.0.1");
+  if (process.argv[2] === "-v") return console.log("0.0.1");
   try {
     console.log(targetDirectory);
     let fileName;
@@ -30,7 +35,7 @@ async function resizePictures() {
               .resize(...format)
               .toFormat("jpg")
               .jpeg({ quality: 90 })
-              .toFile(path.join(process.cwd(), file));
+              .toFile(path.join(process.cwd(), convertFilenameToJpg(file)));
 
             console.log(chalk.green(`${file} correctly resized`));
           } catch (err) {
