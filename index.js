@@ -1,65 +1,62 @@
-#!/usr/local/bin/node
+#!/opt/homebrew/bin/node
 
-const { readdir } = require("fs");
-const path = require("path");
-//const { rename, readdir } = fs.promises;
-
-const sharp = require("sharp");
-const chalk = require("chalk");
+const fs = require('fs').promises;
+const path = require('path');
+const sharp = require('sharp');
+const chalk = require('chalk');
 
 const targetDirectory = process.argv[2];
 
 function convertFilenameToJpg(originalName) {
-  const [fileName] = originalName.split(".");
+  const [fileName] = originalName.split('.');
   return `${fileName}.jpg`;
 }
 
 async function resizePictures() {
-  if (process.argv[2] === "-v") return console.log("0.0.1");
+  if (process.argv[2] === '-v') return console.log('1.0.0');
   try {
     console.log(targetDirectory);
-    let fileName;
-    readdir(targetDirectory, async (err, files) => {
-      try {
-        for (const file of files) {
-          const processedFile = path.join(process.cwd(), targetDirectory, file);
-          fileName = file;
-          try {
-            const metadata = await sharp(processedFile).metadata();
 
-            const format =
-              metadata.width > metadata.height ? [1200, null] : [null, 1200];
+    const files = await fs.readdir(targetDirectory);
 
-            await sharp(processedFile)
-              .rotate()
-              .resize(...format)
-              .toFormat("jpg")
-              .jpeg({ quality: 90 })
-              .toFile(path.join(process.cwd(), convertFilenameToJpg(file)));
+    await Promise.all(
+      files.map(async (file) => {
+        const processedFile = path.join(process.cwd(), targetDirectory, file);
+        try {
+          const metadata = await sharp(processedFile).metadata();
 
-            console.log(chalk.green(`${file} correctly resized`));
-          } catch (err) {
-            console.log(err);
-            if (
-              err.message === "Input file contains unsupported image format"
-            ) {
-              console.warn(
-                `${chalk.bgYellow("WARN")} ${chalk.yellow(
-                  `The file extension is not supported. The file ${fileName} is being skipped`
-                )}`
-              );
-            } else {
-              console.error(chalk.red(err.message));
-            }
+          const format =
+            metadata.width > metadata.height ? [1200, null] : [null, 1200];
+
+          await sharp(processedFile)
+            .rotate()
+            .resize(...format)
+            .flatten({ background: { r: 255, g: 255, b: 255 } })
+            .toFormat('jpg')
+            .jpeg({ quality: 90 })
+            .toFile(path.join(process.cwd(), convertFilenameToJpg(file)));
+
+          console.log(chalk.green(`${file} correctly resized`));
+        } catch (err) {
+          if (
+            err.message === 'Input file contains unsupported image format'
+          ) {
+            console.warn(
+              `${chalk.bgYellow('WARN')} ${chalk.yellow(
+                `The file extension is not supported. The file ${file} is being skipped`
+              )}`
+            );
+          } else {
+            console.error(chalk.red(err.message));
           }
         }
-        console.log(chalk.green("Files successfully resized"));
-      } catch (err) {
-        console.error(chalk.red(err.message));
-      }
-    });
+      })
+    );
+
+    console.log(chalk.green('Files successfully resized'));
   } catch (err) {
     console.error(chalk.red(err.message));
   }
 }
+
 resizePictures();
